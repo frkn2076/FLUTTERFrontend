@@ -17,27 +17,25 @@ void main() {
   });
 
   test('Given Empty Todo list' +
-       'When I write "read book" to <text box> and click to <add button>' +
-       'Then I should see "read book" item in ToDo list', () async {
+       ' When I write "read book" to <text box> and click to <add button>' +
+       ' Then I should see "read book" item in ToDo list', () async {
 
-      // //dummy
-      // final addButton = find.byTooltip('Increment');
-      // await driver?.waitFor(addButton);
-      // await driver?.tap(addButton);
-      // //
-
-      final itemText = find.byValueKey('ItemText');
-      // waitFor gerekebilir
-      await driver?.tap(itemText); // acquire focus
-      await driver?.enterText('read book');  // enter text
-      await driver?.waitFor(find.text('read book')); // verify text appears on UI
+      final itemText = find.byType("TextField");
+      await driver?.waitFor(itemText);
+      await Future<void>.delayed(Duration(milliseconds: 750)); // for video capture
+      await driver?.tap(itemText); 
+      await driver?.enterText('read book'); 
+      await driver?.waitFor(find.text('read book')); 
       expect(await driver?.getText(itemText), 'read book');
 
-      final addButton = find.byValueKey("AddButton");
+      final addButton = find.byType("TextButton");
       await driver?.waitFor(addButton);
       await Future<void>.delayed(Duration(milliseconds: 750)); // for video capture
       await driver?.tap(addButton);
 
+      final dataCell = find.byType("DataCell");
+      await driver?.waitFor(dataCell);
+      expect(await driver?.getText(dataCell), 'read book');
   });
 }
 
