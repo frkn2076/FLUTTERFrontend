@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+
+import 'caller.dart';
+import 'models/todosResponse.dart';
 
 void main() {
   runApp(MyApp());
@@ -27,13 +31,15 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  Future<TodosResponse> _futureTodos = getTodos();
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+  @override
+  void initState() {
+    _futureTodos = getTodos();
+    super.initState();
   }
+
+  final _nameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -42,24 +48,71 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+        child: Container(
+          width: MediaQuery.of(context).size.width / 10,
+          height: MediaQuery.of(context).size.width / 10,
+          child: Column(
+            children: <Widget>[
+              TextField(
+                key: Key("Item-Name"),
+                controller: _nameController,
+              ),
+              TextButton(
+                onPressed: () {
+                  addTodo(_nameController.text).then(
+                      (value) => setState(() => _futureTodos = getTodos()));
+                },
+                child: Icon(Icons.add),
+              ),
+              Container(
+                child: FutureBuilder<TodosResponse>(
+                  future: _futureTodos,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData && snapshot.data?.isSuccess == true) {
+                      return DataTable(
+                          columns: const <DataColumn>[
+                            DataColumn(
+                              label: Text('Item'),
+                            ),
+                          ],
+                          rows: snapshot.data!.todos!
+                              .map((todo) => DataRow(
+                                    cells: <DataCell>[
+                                      DataCell(
+                                        Text(
+                                          todo.name!.toString(),
+                                        ),
+                                      ),
+                                    ],
+                                  ))
+                              .toList());
+                    } else if (snapshot.hasData &&
+                        snapshot.data?.isSuccess == false) {
+                      _popup(context);
+                    }
+                    return Center(child: CircularProgressIndicator());
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  _popup(BuildContext context) {
+    Alert(
+        context: context,
+        title: 'İtem isminin uzunluğu 2den küçük olamaz.',
+        buttons: [
+          DialogButton(
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            child: Text(
+              'Tamam',
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+          )
+        ]).show();
   }
 }
