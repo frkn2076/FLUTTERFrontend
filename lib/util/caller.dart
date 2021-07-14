@@ -1,10 +1,15 @@
 import 'dart:convert';
 
-import 'models/baseResponse.dart';
-import 'models/todosResponse.dart';
+import '../models/baseResponse.dart';
+import '../models/todosResponse.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutterfrontend/util/API.dart';
 
-Future<BaseResponse> addTodo(String name) async {
+const String serverURL = "http://localhost:5000/";
+
+class Caller implements API {
+
+  Future<BaseResponse> addTodo(String name) async {
   final fixedHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Content-type": "application/json",
@@ -14,7 +19,8 @@ Future<BaseResponse> addTodo(String name) async {
     'Name': name,
   });
 
-  final response = await http.post(Uri.parse('http://37.148.212.195:5000/todo/add'), headers: fixedHeaders, body: body);
+  final response = await http.post(Uri.parse(serverURL + 'todo/add'), headers: fixedHeaders, body: body);
+
   if (response.statusCode == 200) {
     return BaseResponse.fromJson(jsonDecode(response.body));
   } else {
@@ -28,10 +34,13 @@ Future<TodosResponse> getTodos() async {
     "Content-type": "application/json",
   };
 
-  final response = await http.get(Uri.parse('http://37.148.212.195:5000/todo/items'), headers: fixedHeaders);
+  final response = await http.get(Uri.parse(serverURL + 'todo/items'), headers: fixedHeaders);
+
   if (response.statusCode == 200) {
     return TodosResponse.fromJson(jsonDecode(response.body));
   } else {
     throw Exception('Failed to load getTodo');
   }
 }
+}
+

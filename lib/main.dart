@@ -1,29 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutterfrontend/business/textValidator.dart';
+import 'package:flutterfrontend/util/API.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
-import 'caller.dart';
+import 'util/caller.dart';
 import 'models/todosResponse.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(MyApp(client: Caller()));
 }
 
 class MyApp extends StatelessWidget {
+  MyApp({Key? key, required this.client}) : super(key: key);
+  final API client; 
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Flutter Demo Home Page', client: client),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
-
+  MyHomePage({Key? key, required this.title, required this.client}) : super(key: key);
+  final API client;
   final String title;
 
   @override
@@ -31,11 +37,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Future<TodosResponse> _futureTodos = getTodos();
+  late Future<TodosResponse> _futureTodos;
 
   @override
   void initState() {
-    _futureTodos = getTodos();
+    _futureTodos = widget.client.getTodos();
     super.initState();
   }
 
@@ -49,50 +55,58 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Container(
-          width: MediaQuery.of(context).size.width / 10,
-          height: MediaQuery.of(context).size.width / 10,
           child: Column(
             children: <Widget>[
               TextField(
                 key: Key("Item-Name"),
                 controller: _nameController,
+                decoration: new InputDecoration(hintText: "Eklemek istediğiniz Todo Itemi giriniz..."),
               ),
               TextButton(
+                key: Key("Item-Button"),
                 onPressed: () {
-                  addTodo(_nameController.text).then(
-                      (value) => setState(() => _futureTodos = getTodos()));
+                  if (TextValidator().isLengthEnough(_nameController.text)) {
+                    widget.client.addTodo(_nameController.text).then((value) => setState(() {
+                          _futureTodos = widget.client.getTodos();
+                          _nameController.text = "";
+                        }));
+                  } else {
+                    _popup(context);
+                  }
                 },
                 child: Icon(Icons.add),
               ),
-              Container(
-                child: FutureBuilder<TodosResponse>(
-                  future: _futureTodos,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData && snapshot.data?.isSuccess == true) {
-                      return DataTable(
-                          columns: const <DataColumn>[
-                            DataColumn(
-                              label: Text('Item'),
-                            ),
-                          ],
-                          rows: snapshot.data!.todos!
-                              .map((todo) => DataRow(
-                                    cells: <DataCell>[
-                                      DataCell(
-                                        Text(
-                                          todo.name!.toString(),
-                                        ),
+              FutureBuilder<TodosResponse>(
+                key: Key("Item-List"),
+                future: _futureTodos,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data?.isError == false) {
+                    return DataTable(
+                        columns: const <DataColumn>[
+                          DataColumn(
+                            label: Text('Todo Itemler',
+                                style: TextStyle(fontWeight: FontWeight.bold)
+                                ,),
+                          ),
+                        ],
+                        rows: snapshot.data!.todos!
+                            .sublist(snapshot.data!.todos!.length > 5 ? snapshot.data!.todos!.length - 5 : 0)
+                            .map((todo) => DataRow(
+                                  cells: <DataCell>[
+                                    DataCell(
+                                      Text(
+                                        todo.toString(),
                                       ),
-                                    ],
-                                  ))
-                              .toList());
-                    } else if (snapshot.hasData &&
-                        snapshot.data?.isSuccess == false) {
-                      _popup(context);
-                    }
-                    return Center(child: CircularProgressIndicator());
-                  },
-                ),
+                                    ),
+                                  ],
+                                ))
+                            .toList());
+                  } else if (snapshot.hasData &&
+                      snapshot.data?.isError == true) {
+                    _popup(context);
+                  }
+                  return Center(child: CircularProgressIndicator());
+                },
               ),
             ],
           ),

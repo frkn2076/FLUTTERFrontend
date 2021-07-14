@@ -9,13 +9,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:flutterfrontend/main.dart';
+import 'package:flutterfrontend/util/API.dart';
 
 void main() {
   testWidgets('Item text box smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(MyApp());
-
+    await tester.pumpWidget(MyApp(client: API()));
     final inputText = 'read book';
-    final itemText = find.byType(TextField);
+    final itemText = find.byKey(Key("Item-Name"));
     
     expect(itemText, findsOneWidget);
     expect(find.text(inputText), findsNothing);
@@ -25,34 +25,26 @@ void main() {
   });
 
   testWidgets('DataTable keeps items smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(MyApp());
+    await tester.pumpWidget(MyApp(client: API()));
 
-    expect(find.byType(DataTable), findsOneWidget);
-    expect(find.byType(DataColumn), findsOneWidget);
-    expect(find.byType(DataRow), findsOneWidget);
-    expect(find.byType(DataCell), findsOneWidget);
+    final itemList = find.byKey(Key("Item-List"));
+    expect(itemList, findsOneWidget);
   });
 
   testWidgets('Add button adds item smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(MyApp());
-
-    expect(find.byIcon(Icons.add), findsOneWidget);
+    await tester.pumpWidget(MyApp(client: API()));
 
     final inputText = 'read book';
-    final itemText = find.byType(TextField);
+    expect(find.widgetWithText(DataTable, inputText), findsNothing);
+    final itemText = find.byKey(Key("Item-Name"));
     await tester.enterText(itemText, inputText);
 
-    final addButton = find.byIcon(Icons.add); 
+    final addButton = find.byKey(Key("Item-Button"));
+    expect(addButton, findsOneWidget);
     await tester.tap(addButton);
     await tester.pump();
 
-    expect(find.widgetWithText(DataCell, inputText), findsOneWidget);
+    expect(find.widgetWithText(DataTable, inputText), findsOneWidget);
   });
-
-  
-
-  
-
-  
 }
 

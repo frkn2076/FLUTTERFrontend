@@ -1,18 +1,11 @@
 class BaseResponse {
-  bool? isSuccess;
+  bool? isError;
   String? errorMessage;
 
-  BaseResponse({this.isSuccess, this.errorMessage});
+  BaseResponse({this.isError, this.errorMessage});
 
   BaseResponse.fromJson(Map<String, dynamic> json) {
-    isSuccess = json['IsSuccess'];
+    isError = json['IsError'];
     errorMessage = json['ErrorMessage'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['IsSuccess'] = this.isSuccess;
-    data['ErrorMessage'] = this.errorMessage;
-    return data;
   }
 }
