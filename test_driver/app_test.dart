@@ -20,7 +20,7 @@ void main() {
        ' When I write "read book" to <text box> and click to <add button>' +
        ' Then I should see "read book" item in ToDo list', () async {
 
-      final itemText = find.byType("TextField");
+      final itemText = find.byValueKey("Item-Name");
       await driver?.waitFor(itemText);
       await Future<void>.delayed(Duration(milliseconds: 750)); // for video capture
       await driver?.tap(itemText); 
@@ -28,14 +28,11 @@ void main() {
       await driver?.waitFor(find.text('read book')); 
       expect(await driver?.getText(itemText), 'read book');
 
-      final addButton = find.byType("TextButton");
+      final addButton = find.byValueKey("Item-Button");
       await driver?.waitFor(addButton);
       await Future<void>.delayed(Duration(milliseconds: 750)); // for video capture
       await driver?.tap(addButton);
-
-      final dataCell = find.byType("DataCell");
-      await driver?.waitFor(dataCell);
-      expect(await driver?.getText(dataCell), 'read book');
+      expect(await driver?.getText(itemText), '');
   });
 }
 
