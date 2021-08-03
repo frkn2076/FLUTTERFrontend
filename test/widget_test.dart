@@ -46,5 +46,19 @@ void main() {
 
     expect(find.widgetWithText(DataTable, inputText), findsOneWidget);
   });
+
+  testWidgets('Delete button deletes all items smoke test', (WidgetTester tester) async {
+    API.items.add("todo1");
+    API.items.add("todo2");
+
+    await tester.pumpWidget(MyApp(client: API()));
+    final deleteAllButton = find.byKey(Key("DeleteAll-Button"));
+    expect(deleteAllButton, findsOneWidget);
+
+    await tester.tap(deleteAllButton);
+    await tester.pump();
+
+    expect(API.items.length, 0);
+  });
 }
 

@@ -110,6 +110,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   return Center(child: CircularProgressIndicator());
                 },
               ),
+              TextButton(
+                key: Key("DeleteAll-Button"),
+                child: Text("Delete All"),
+                onPressed: () {
+                  API.items = [];
+                },
+              ),
             ],
           ),
         ),
